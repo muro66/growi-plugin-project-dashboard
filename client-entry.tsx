@@ -38,14 +38,12 @@ const activate = (): void => {
   }
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     run();
-    // GROWI が本文を非同期で描画する場合に備え、少し遅れて再スキャン
-    setTimeout(run, 800);
-    setTimeout(run, 2000);
+    // GROWI が本文を非同期で描画する場合に備え、1回だけ遅れて再スキャン（重複は scanLsx でスキップ）
+    setTimeout(run, 1200);
   } else {
     window.addEventListener('DOMContentLoaded', () => {
       run();
-      setTimeout(run, 800);
-      setTimeout(run, 2000);
+      setTimeout(run, 1200);
     });
   }
 };

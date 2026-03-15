@@ -48,6 +48,9 @@ export function scanLsxLists(): LsxTarget[] {
     // リンクのほとんどがページパスなら lsx またはページリンクリストとみなす
     if (paths.length < 1 || paths.length < items.length * 0.5) continue;
 
+    // すでにダッシュボードを挿入済みのリストはスキップ（再スキャン時の重複防止）
+    if (ul.previousElementSibling?.classList?.contains('grw-project-dashboard-root')) continue;
+
     // 見出しの直後なら確実（例: ## Tasks の次のリスト）
     const prev = ul.previousElementSibling;
     const title =
