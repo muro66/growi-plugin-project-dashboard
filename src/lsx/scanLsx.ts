@@ -33,7 +33,11 @@ export function scanLsxLists(): LsxTarget[] {
   const lists = Array.from(scope.querySelectorAll('ul, ol')) as HTMLUListElement[];
 
   for (const ul of lists) {
-    const items = Array.from(ul.querySelectorAll('li > a')) as HTMLAnchorElement[];
+    // GROWI lsx は <div class="lsx"><div class="page-list"><ul class="page-list-ul">…</ul></div></div> という構造で、
+    // li 直下ではなく li > div > a.page-list-link になっているため、a を広めに拾う
+    const items = Array.from(
+      ul.querySelectorAll('a.page-list-link, li a')
+    ) as HTMLAnchorElement[];
     if (items.length < 1) continue;
 
     const paths: string[] = [];
