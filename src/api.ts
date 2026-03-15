@@ -21,13 +21,14 @@ async function fetchPage(pathOrId: string): Promise<GrowiPage | null> {
   const id = pathOrId.replace(/^\//, '').trim();
 
   if (isPageId(id)) {
-    const res = await fetch(`${base}/_api/v3/pages/${id}`, { credentials: 'include' });
+    const res = await fetch(`${base}/_api/v3/page?pageId=${encodeURIComponent(id)}`, { credentials: 'include' });
     if (!res.ok) return null;
     const json = await res.json();
     return json.page ?? json ?? null;
   }
 
-  const res = await fetch(`${base}/_api/v3/page?path=${encodeURIComponent(pathOrId.startsWith('/') ? pathOrId : '/' + pathOrId)}`, {
+  const path = pathOrId.startsWith('/') ? pathOrId : '/' + pathOrId;
+  const res = await fetch(`${base}/_api/v3/page?path=${encodeURIComponent(path)}`, {
     credentials: 'include',
   });
   if (!res.ok) return null;
