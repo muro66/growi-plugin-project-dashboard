@@ -13,36 +13,48 @@ function extractPathFromAnchor(href: string): string | null {
   }
 }
 
+/** 同一オリジンのページパスか（先頭が / で、# や ? は含まない） */
+function isPagePath(path: string): boolean {
+  if (!path || path.charAt(0) !== '/') return false;
+  try {
+    const u = new URL(path, window.location.origin);
+    return u.origin === window.location.origin && u.pathname.length > 1;
+  } catch {
+    return false;
+  }
+}
+
 export function scanLsxLists(): LsxTarget[] {
   if (typeof document === 'undefined') return [];
-  const lists = Array.from(document.querySelectorAll('ul, ol')) as HTMLUListElement[];
   const targets: LsxTarget[] = [];
 
-  for (const ul of lists) {
-    // 簡易なヒューリスティック: data-lsx や lsx を含むクラス名を持つリストを対象にする
-    const cls = ul.className || '';
-    if (!cls.includes('lsx') && !ul.dataset.lsx) continue;
+  // メインコンテンツ内に限定（GROWI は .wiki や #content などを使うことが多い）
+  const scope = document.querySelector('.wiki, .content, #content, [class*="page-body"], main') || document.body;
+  const lists = Array.from(scope.querySelectorAll('ul, ol')) as HTMLUListElement[];
 
+  for (const ul of lists) {
     const items = Array.from(ul.querySelectorAll('li > a')) as HTMLAnchorElement[];
-    if (!items.length) continue;
+    if (items.length < 1) continue;
 
     const paths: string[] = [];
     for (const a of items) {
       const p = extractPathFromAnchor(a.href);
-      if (p) paths.push(p);
+      if (p && isPagePath(p)) paths.push(p);
     }
-    if (!paths.length) continue;
+    // リンクのほとんどがページパスなら lsx またはページリンクリストとみなす
+    if (paths.length < 1 || paths.length < items.length * 0.5) continue;
 
-    const heading = ul.previousElementSibling;
-    const title = heading && /^H[1-6]$/.test(heading.tagName) ? heading.textContent?.trim() || '' : 'Project Tasks';
+    // 見出しの直後なら確実（例: ## Tasks の次のリスト）
+    const prev = ul.previousElementSibling;
+    const title =
+      prev && /^H[1-6]$/.test(prev.tagName) ? (prev.textContent?.trim() || '') : 'Project Tasks';
 
     targets.push({
       root: ul,
-      title,
+      title: title || 'Tasks',
       paths,
     });
 
-    // 一覧そのものはダッシュボードに置き換えるので隠す
     ul.style.display = 'none';
   }
 

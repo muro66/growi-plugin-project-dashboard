@@ -33,10 +33,20 @@ async function enhanceLsxDashboards(): Promise<void> {
 }
 
 const activate = (): void => {
-  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  function run() {
     enhanceLsxDashboards();
+  }
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    run();
+    // GROWI が本文を非同期で描画する場合に備え、少し遅れて再スキャン
+    setTimeout(run, 800);
+    setTimeout(run, 2000);
   } else {
-    window.addEventListener('DOMContentLoaded', () => enhanceLsxDashboards());
+    window.addEventListener('DOMContentLoaded', () => {
+      run();
+      setTimeout(run, 800);
+      setTimeout(run, 2000);
+    });
   }
 };
 
