@@ -43,8 +43,12 @@ export async function fetchTasksForLsx(target: LsxTarget): Promise<DashboardTask
     if (!page) continue;
     const body = page.revision?.body ?? page.body ?? '';
     const meta = parseTicketMeta(body) ?? DEFAULT_META;
+    const pagePath = page.path != null && String(page.path).trim() !== ''
+      ? (String(page.path).startsWith('/') ? String(page.path) : '/' + String(page.path))
+      : path;
     tasks.push({
       path,
+      href: pagePath,
       title: page.title ?? path.split('/').pop() ?? path,
       meta,
     });
